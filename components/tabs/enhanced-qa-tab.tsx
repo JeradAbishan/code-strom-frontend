@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,12 +29,23 @@ interface QATabProps {
   documentId?: string
 }
 
+interface RagHealth {
+  rag_health?: {
+    status: 'healthy' | 'partial' | 'unhealthy' | 'unknown'
+  }
+  capabilities?: {
+    question_answering: boolean
+    semantic_search: boolean
+    document_citation: boolean
+  }
+}
+
 export function QATab({ documentId }: QATabProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
-  const [ragHealth, setRagHealth] = useState<any>(null)
+  const [ragHealth, setRagHealth] = useState<RagHealth | null>(null)
 
   const quickTopics = [
     "Termination Conditions",
@@ -45,13 +56,7 @@ export function QATab({ documentId }: QATabProps) {
     "Payment Terms",
   ]
 
-  // Load suggested questions and check RAG health on component mount
-  useEffect(() => {
-    loadSuggestedQuestions()
-    checkRagHealth()
-  }, [documentId])
-
-  const loadSuggestedQuestions = async () => {
+  const loadSuggestedQuestions = useCallback(async () => {
     try {
       const params = new URLSearchParams()
       if (documentId) {
@@ -75,7 +80,13 @@ export function QATab({ documentId }: QATabProps) {
         "What are the payment terms and conditions?"
       ])
     }
-  }
+  }, [documentId])
+
+  // Load suggested questions and check RAG health on component mount
+  useEffect(() => {
+    loadSuggestedQuestions()
+    checkRagHealth()
+  }, [documentId, loadSuggestedQuestions])
 
   const checkRagHealth = async () => {
     try {

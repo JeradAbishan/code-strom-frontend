@@ -45,7 +45,6 @@ export default function Home() {
         <DocumentView
           documentId={selectedDocument}
           onBackToDashboard={handleBackToDashboard}
-          uploadedFileName={uploadedFile?.name}
         />
       )}
     </div>
