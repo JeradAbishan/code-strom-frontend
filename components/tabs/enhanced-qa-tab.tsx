@@ -38,12 +38,24 @@ interface QATabProps {
   documentId?: string;
 }
 
+interface RagHealth {
+  rag_health?: {
+    status: 'healthy' | 'partial' | 'unhealthy' | 'unknown'
+  }
+  capabilities?: {
+    question_answering: boolean
+    semantic_search: boolean
+    document_citation: boolean
+  }
+}
+
 export function QATab({ documentId }: QATabProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [ragHealth, setRagHealth] = useState<any>(null);
+
 
   const quickTopics = [
     "Termination Conditions",
