@@ -118,6 +118,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -129,4 +130,317 @@
     "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Enhanced Summary View Styling */
+.enhanced-summary-content {
+  @apply space-y-4;
+}
+
+.enhanced-summary-content h2 {
+  @apply text-xl font-bold text-foreground mb-4 mt-6 pb-2 border-b border-border;
+}
+
+.enhanced-summary-content h3 {
+  @apply text-lg font-semibold text-foreground mb-3 mt-4;
+}
+
+.enhanced-summary-content h4 {
+  @apply text-base font-medium text-foreground mb-2 mt-3;
+}
+
+/* Enhanced blockquotes for important sections */
+.enhanced-summary-content blockquote {
+  @apply border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 rounded-r italic;
+}
+
+/* Risk level badges */
+.risk-high {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.risk-medium {
+  @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.risk-low {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.financial-term {
+  @apply bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+/* Critical term highlighting styles for selective emphasis */
+.critical-term-highlight {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+  position: relative;
+}
+
+.critical-term-highlight::before {
+  content: "⚠️";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Auto-renewal specific styling */
+.auto-renewal-highlight {
+  background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+  border: 1px solid #fdba74;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.auto-renewal-highlight::before {
+  content: "🔄";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: #f97316;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Penalty/Fee highlighting */
+.penalty-highlight {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.penalty-highlight::before {
+  content: "💰";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* One-sided terms highlighting */
+.one-sided-highlight {
+  background: linear-gradient(135deg, #fffbeb 0%, #fde68a 100%);
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.one-sided-highlight::before {
+  content: "⚖️";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: #d97706;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Termination terms highlighting */
+.termination-highlight {
+  background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+  border: 1px solid #c084fc;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.termination-highlight::before {
+  content: "🚪";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: #9333ea;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Flag color coding system */
+.flag-red {
+  background: #ef4444;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flag-orange {
+  background: #f97316;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flag-yellow {
+  background: #eab308;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flag-purple {
+  background: #9333ea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Enhanced risk level badges with gradients */
+.risk-level-high {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.risk-level-medium {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3);
+}
+
+.risk-level-low {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
+}
+
+/* Enhanced financial terms highlighting */
+.financial-term-enhanced {
+  background: linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%);
+  border: 1px solid #6ee7b7;
+  color: #047857;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-block;
+  margin: 2px;
+  font-size: 12px;
+}
+
+/* Dark mode support for enhanced styles */
+@media (prefers-color-scheme: dark) {
+  .critical-term-highlight {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    border-color: #dc2626;
+    color: #fecaca;
+  }
+
+  .auto-renewal-highlight {
+    background: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
+    border-color: #ea580c;
+    color: #fed7aa;
+  }
+
+  .penalty-highlight {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    border-color: #dc2626;
+    color: #fecaca;
+  }
+
+  .one-sided-highlight {
+    background: linear-gradient(135deg, #92400e 0%, #a16207 100%);
+    border-color: #ca8a04;
+    color: #fde68a;
+  }
+
+  .termination-highlight {
+    background: linear-gradient(135deg, #581c87 0%, #6b21a8 100%);
+    border-color: #8b5cf6;
+    color: #e9d5ff;
+  }
+
+  .financial-term-enhanced {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    border-color: #059669;
+    color: #a7f3d0;
+  }
 }
