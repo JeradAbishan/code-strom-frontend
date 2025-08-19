@@ -1,6 +1,6 @@
 // API configuration and utility functions for backend integration
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.swift-supply.xyz";
+const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "https://api.swift-supply.xyz";
+
 
 // API Response Types
 export interface APIResponse<T = any> {
