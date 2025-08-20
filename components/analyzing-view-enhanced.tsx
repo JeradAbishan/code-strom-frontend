@@ -2,13 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Clock, Zap, Database, Brain, AlertCircle } from "lucide-react";
-import type { ProcessingStatusResponse } from "@/lib/api";
+import { CheckCircle, Clock, Zap, Database, Brain } from "lucide-react";
 
 interface AnalyzingViewProps {
   fileName?: string;
   isProcessing?: boolean;
-  processingStatus?: ProcessingStatusResponse | null;
+  processingStatus?: {
+    fast_track_completed: boolean;
+    background_completed: boolean;
+    vector_storage_ready: boolean;
+    summary_embedding_ready: boolean;
+    qa_system_ready: boolean;
+    processing_times: {
+      fast_track: number;
+      background_processing?: number;
+      total_time?: number;
+    };
+  };
 }
 
 export function AnalyzingView({
@@ -17,37 +27,36 @@ export function AnalyzingView({
   processingStatus,
 }: AnalyzingViewProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [showSlowWarning, setShowSlowWarning] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const steps = [
-    "🚀 Processing Document with Original API...",
-    "📄 Generating Complete Analysis...", 
-    "✅ Analysis Complete - Results Ready!",
-    "🔍 Background: Setting up Q&A System...",
-    "🗃️ Background: Vector Storage Processing...",
-    "🧠 Q&A Knowledge Base Ready!",
+    "🚀 Fast AI Analysis (Direct Processing)...",
+    "📄 Document Summary Generation...", 
+    "🔍 Background Vector Processing...",
+    "🗃️ Chunk Embedding & Storage...",
+    "🧠 Q&A Knowledge Base Setup...",
+    "✅ Enhanced Dual-Process Complete!",
   ];
 
   const enhancedSteps = [
     {
       icon: Zap,
-      title: "Document Analysis",
-      description: "Complete AI-powered analysis using process_direct",
-      completed: !isProcessing,
+      title: "Fast Track Analysis",
+      description: "AI-powered document summarization",
+      completed: processingStatus?.fast_track_completed || false,
       time: processingStatus?.processing_times?.fast_track,
     },
     {
       icon: Database,
-      title: "Vector Processing (Background)",
-      description: "Optional Q&A system embedding & chunking",
+      title: "Vector Processing",
+      description: "Background embedding & chunking",
       completed: processingStatus?.vector_storage_ready || false,
       time: processingStatus?.processing_times?.background_processing,
     },
     {
       icon: Brain,
-      title: "Q&A System (Background)",
-      description: "Interactive knowledge base for questions",
+      title: "Q&A System",
+      description: "Interactive knowledge base ready",
       completed: processingStatus?.qa_system_ready || false,
       time: processingStatus?.processing_times?.total_time,
     },
@@ -56,40 +65,36 @@ export function AnalyzingView({
   useEffect(() => {
     if (!isProcessing) return;
 
-    // Timer for elapsed time
-    const timeInterval = setInterval(() => {
-      setTimeElapsed(prev => prev + 1);
-    }, 1000);
-
-    // Step progression
-    const stepInterval = setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentStep((prev) => {
         const next = (prev + 1) % steps.length;
         return next;
       });
+
+      // Simulate progress based on processing status
+      setProgress((prev) => {
+        if (processingStatus?.fast_track_completed && prev < 40) {
+          return 40; // Fast track complete
+        }
+        if (processingStatus?.vector_storage_ready && prev < 70) {
+          return 70; // Vector processing complete
+        }
+        if (processingStatus?.qa_system_ready && prev < 100) {
+          return 100; // Everything complete
+        }
+        
+        const increment = Math.random() * 10 + 2; // Slower increments
+        return Math.min(prev + increment, 85); // Cap at 85% until completion
+      });
     }, 2000);
 
-    return () => {
-      clearInterval(timeInterval);
-      clearInterval(stepInterval);
-    };
-  }, [isProcessing, steps.length]);
+    return () => clearInterval(interval);
+  }, [isProcessing, steps.length, processingStatus]);
 
-  // Show slow warning after 45 seconds
-  useEffect(() => {
-    if (timeElapsed > 45 && !processingStatus?.fast_track_completed) {
-      setShowSlowWarning(true);
-    }
-  }, [timeElapsed, processingStatus?.fast_track_completed]);
-
-  // Calculate overall progress with time-based fallback
+  // Calculate overall progress based on completed steps
   const overallProgress = enhancedSteps.reduce((acc, step) => {
     return acc + (step.completed ? 33.33 : 0);
   }, 0);
-
-  // If no status updates, show time-based progress (slower)
-  const timeBasedProgress = Math.min((timeElapsed / 120) * 100, 85); // 2 minute estimate, cap at 85%
-  const displayProgress = overallProgress > 0 ? overallProgress : timeBasedProgress;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -107,10 +112,7 @@ export function AnalyzingView({
               <p className="text-muted-foreground">
                 Processing: {fileName || "document"}
               </p>
-              <div className="mt-2 text-sm text-muted-foreground">
-                Time elapsed: {Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, '0')}
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
+              <div className="mt-4 text-sm text-muted-foreground">
                 Dual-Process Architecture: Fast AI Analysis + Background Vector Processing
               </div>
             </div>
@@ -159,67 +161,18 @@ export function AnalyzingView({
             <div className="mb-6">
               <div className="flex justify-between text-sm text-muted-foreground mb-2">
                 <span>Overall Progress</span>
-                <span>{Math.round(displayProgress)}%</span>
+                <span>{Math.round(overallProgress)}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${displayProgress}%` }}
+                  style={{ width: `${overallProgress}%` }}
                 ></div>
               </div>
-              {timeElapsed > 0 && (
-                <div className="text-xs text-muted-foreground mt-1 text-center">
-                  {overallProgress === 0 
-                    ? `Processing... (${timeElapsed}s elapsed)` 
-                    : `Status updates received (${timeElapsed}s total)`
-                  }
-                </div>
-              )}
             </div>
-
-            {/* Slow Processing Warning */}
-            {showSlowWarning && (
-              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-yellow-600" />
-                  <div>
-                    <h4 className="font-medium text-yellow-800">Processing is taking longer than expected</h4>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Complex documents may take 1-2 minutes. The system is working on your analysis...
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Status Messages */}
             <div className="space-y-2">
-              {/* Slow processing warning */}
-              {showSlowWarning && !processingStatus?.fast_track_completed && (
-                <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded border border-yellow-200">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <span className="font-medium">Processing is taking longer than expected</span>
-                  </div>
-                  <p className="mt-1 text-xs">
-                    The AI agents are working on complex analysis. This may take up to 2-3 minutes for large documents.
-                  </p>
-                </div>
-              )}
-
-              {/* Backend timeout hint */}
-              {timeElapsed > 90 && !processingStatus?.fast_track_completed && (
-                <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded border border-orange-200">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <span className="font-medium">Backend may be experiencing high load</span>
-                  </div>
-                  <p className="mt-1 text-xs">
-                    You can try refreshing the page and uploading again, or wait for the current process to complete.
-                  </p>
-                </div>
-              )}
-
               {processingStatus?.fast_track_completed && (
                 <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
                   ✅ Fast analysis complete - Document ready for viewing!
@@ -238,7 +191,7 @@ export function AnalyzingView({
             </div>
 
             {/* Performance Info */}
-            {processingStatus?.processing_times && (
+            {processingStatus && (
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                 <h4 className="font-medium text-foreground mb-2">Performance Metrics</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -259,35 +212,6 @@ export function AnalyzingView({
                 </div>
               </div>
             )}
-
-            {/* Current Step Display */}
-            <div className="mt-6 text-center">
-              <div className="inline-flex items-center space-x-2 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-full">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span>{steps[currentStep]}</span>
-              </div>
-              
-              {/* Additional Status for Long Processing */}
-              {timeElapsed > 30 && !processingStatus?.fast_track_completed && (
-                <div className="mt-4 text-xs text-muted-foreground">
-                  <div className="flex items-center justify-center space-x-1">
-                    <AlertCircle className="h-3 w-3" />
-                    <span>Processing complex document - this may take a moment...</span>
-                  </div>
-                </div>
-              )}
-              
-              {timeElapsed > 90 && (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  <button 
-                    onClick={() => window.location.reload()} 
-                    className="text-primary hover:underline"
-                  >
-                    Refresh page if processing seems stuck
-                  </button>
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>

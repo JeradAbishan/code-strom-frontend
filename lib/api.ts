@@ -1,5 +1,5 @@
 // API configuration and utility functions for backend integration
-const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "https://api.swift-supply.xyz";
+const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 
 // API Response Types
@@ -78,6 +78,7 @@ export interface DocumentAnalysisResponse {
       [key: string]: any;
     };
     processing_errors: string[];
+    qa_document_id?: string; // Q&A document ID for vector search
   };
   components: {
     summary: {
@@ -150,10 +151,47 @@ export interface QAResponse {
   response_type: string;
   source_sections: string[];
   related_topics: string[];
-  citations: any[];
+  citations: {
+    source: string;
+    chunk_index: number;
+    similarity: number;
+    preview: string;
+  }[];
   follow_up_questions: string[];
   processing_time: number;
   timestamp: number;
+}
+
+export interface EnhancedProcessingResponse {
+  status: string;
+  message: string;
+  document_id: string;
+  processing_started: boolean;
+  fast_track_summary?: string;
+  processing_times?: {
+    fast_analysis: number;
+    background_processing: boolean;
+  };
+  ai_analysis?: string;
+  vector_storage_status?: string;
+  summary_embedding_status?: string;
+  qa_ready?: boolean;
+}
+
+export interface ProcessingStatusResponse {
+  status: string;
+  document_id: string;
+  fast_track_completed: boolean;
+  background_completed: boolean;
+  vector_storage_ready: boolean;
+  summary_embedding_ready: boolean;
+  qa_system_ready: boolean;
+  processing_times: {
+    fast_track: number;
+    background_processing?: number;
+    total_time?: number;
+  };
+  analysis?: string;
 }
 
 export interface SuggestedQuestionsResponse {
@@ -232,15 +270,58 @@ export class DocumentAPI {
     }
   }
 
+  // Enhanced processing endpoint for dual-process architecture
+  static async processDocumentEnhanced(
+    file: File
+  ): Promise<APIResponse<EnhancedProcessingResponse>> {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${API_BASE_URL}/process_document_enhanced`, {
+        method: "POST",
+        body: formData,
+      });
+
+      return this.handleResponse<EnhancedProcessingResponse>(response);
+    } catch (error) {
+      return {
+        status: "error",
+        error:
+          error instanceof Error ? error.message : "Failed to process document",
+      };
+    }
+  }
+
+  // Check processing status for enhanced workflow
+  static async checkProcessingStatus(
+    documentId: string
+  ): Promise<APIResponse<ProcessingStatusResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/processing_status/${documentId}`);
+      return this.handleResponse<ProcessingStatusResponse>(response);
+    } catch (error) {
+      return {
+        status: "error",
+        error:
+          error instanceof Error ? error.message : "Failed to check status",
+      };
+    }
+  }
+
   static async askQuestion(
     query: string,
-    documentId?: string
+    documentId?: string,
+    conversationContext?: string
   ): Promise<APIResponse<QAResponse>> {
     try {
       const params = new URLSearchParams();
       params.append("query", query);
       if (documentId) {
         params.append("document_id", documentId);
+      }
+      if (conversationContext) {
+        params.append("conversation_context", conversationContext);
       }
 
       const response = await fetch(`${API_BASE_URL}/ask_question?${params}`, {

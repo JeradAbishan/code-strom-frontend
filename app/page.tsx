@@ -5,12 +5,12 @@ import { Dashboard } from "@/components/dashboard";
 import { DocumentView } from "@/components/document-view";
 import { AnalyzingView } from "@/components/analyzing-view";
 import { AppProvider, useAppContext, appActions } from "@/lib/context";
-import { useDocumentAnalysis, useBackendHealth } from "@/lib/hooks";
+import { useEnhancedDocumentAnalysis, useBackendHealth } from "@/lib/hooks";
 
 function HomeContent() {
   const { state, dispatch } = useAppContext();
-  const { processDocument, isProcessing, analysisData, error } =
-    useDocumentAnalysis();
+  const { processDocument, isProcessing, analysisData, error, processingStatus, documentId } =
+    useEnhancedDocumentAnalysis();
   const { healthStatus, isOnline } = useBackendHealth();
 
   // Update backend health in context
@@ -24,11 +24,17 @@ function HomeContent() {
   useEffect(() => {
     if (analysisData && !isProcessing) {
       console.log("Main page received analysisData:", analysisData); // Debug log
+      
+      // Set the document with the proper ID from enhanced processing
+      if (documentId) {
+        dispatch(appActions.setDocument(documentId, analysisData.metadata.filename));
+      }
+      
       dispatch(appActions.setAnalysisData(analysisData));
       dispatch(appActions.setView("document"));
       dispatch(appActions.setProcessing(false));
     }
-  }, [analysisData, isProcessing, dispatch]);
+  }, [analysisData, isProcessing, documentId, dispatch]);
 
   // Handle processing errors
   useEffect(() => {
@@ -87,8 +93,19 @@ function HomeContent() {
 
       {/* Error Display */}
       {state.error && (
-        <div className="bg-yellow-500 text-white px-4 py-2 text-center text-sm">
-          ⚠️ {state.error}
+        <div className="bg-red-500 text-white px-4 py-3 text-center">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium">Processing Error</p>
+              <p className="text-xs mt-1">{state.error}</p>
+            </div>
+            <button
+              onClick={handleBackToDashboard}
+              className="bg-white text-red-500 px-3 py-1 rounded text-xs font-medium hover:bg-red-50"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       )}
 
@@ -104,6 +121,7 @@ function HomeContent() {
         <AnalyzingView
           fileName={state.currentDocument?.filename}
           isProcessing={state.isProcessing}
+          processingStatus={processingStatus}
         />
       )}
 

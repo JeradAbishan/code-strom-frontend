@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Send,
   User,
@@ -14,7 +16,6 @@ import {
   ExternalLink,
   FileText,
   Clock,
-  AlertCircle,
 } from "lucide-react";
 
 interface Message {
@@ -38,15 +39,138 @@ interface QATabProps {
   documentId?: string;
 }
 
-interface RagHealth {
-  rag_health?: {
-    status: 'healthy' | 'partial' | 'unhealthy' | 'unknown'
-  }
-  capabilities?: {
-    question_answering: boolean
-    semantic_search: boolean
-    document_citation: boolean
-  }
+// Enhanced markdown components for ChatGPT-style formatting with proper structure
+const MarkdownComponents = {
+  // Proper paragraph spacing with minimal margins
+  p: ({ children, ...props }: any) => (
+    <p className="mb-2 mt-1 leading-relaxed text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap" {...props}>{children}</p>
+  ),
+  
+  // Structured heading spacing for clear hierarchy
+  h1: ({ children, ...props }: any) => (
+    <h1 className="text-lg font-bold mb-2 mt-4 first:mt-0 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-1" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }: any) => (
+    <h2 className="text-base font-bold mb-2 mt-3 first:mt-0 text-gray-900 dark:text-gray-100" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }: any) => (
+    <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0 text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </h3>
+  ),
+  h4: ({ children, ...props }: any) => (
+    <h4 className="text-sm font-semibold mb-1 mt-2 first:mt-0 text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </h4>
+  ),
+  
+  // Structured list spacing with proper margins
+  ul: ({ children, ...props }: any) => (
+    <ul className="mb-2 mt-1 ml-4 space-y-0.5 list-disc marker:text-gray-600 dark:marker:text-gray-400" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="mb-2 mt-1 ml-4 space-y-0.5 list-decimal marker:text-gray-600 dark:marker:text-gray-400" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }: any) => (
+    <li className="text-sm leading-relaxed text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </li>
+  ),
+  
+  // Enhanced bold styling with better contrast
+  strong: ({ children, ...props }: any) => (
+    <strong className="font-bold text-gray-900 dark:text-gray-100" {...props}>
+      {children}
+    </strong>
+  ),
+  
+  // Enhanced italic styling
+  em: ({ children, ...props }: any) => (
+    <em className="italic text-gray-700 dark:text-gray-300" {...props}>
+      {children}
+    </em>
+  ),
+  
+  // Structured blockquote spacing
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/20 pl-3 py-2 mb-3 mt-2 italic text-gray-700 dark:text-gray-300 rounded-r-md" {...props}>
+      {children}
+    </blockquote>
+  ),
+  
+  // Enhanced code styling with syntax highlighting appearance
+  code: ({ children, className, ...props }: any) => {
+    const isInline = !className;
+    if (isInline) {
+      return (
+        <code className="bg-gray-100 dark:bg-gray-800 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded text-xs font-mono border" {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <pre className="bg-gray-900 dark:bg-gray-950 text-gray-100 p-3 rounded-lg mb-3 mt-2 overflow-x-auto border" {...props}>
+        <code className="text-sm font-mono">{children}</code>
+      </pre>
+    );
+  },
+  
+  // Structured table spacing
+  table: ({ children, ...props }: any) => (
+    <div className="mb-3 mt-2 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" {...props}>
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children, ...props }: any) => (
+    <thead className="bg-gray-50 dark:bg-gray-800" {...props}>{children}</thead>
+  ),
+  th: ({ children, ...props }: any) => (
+    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider" {...props}>
+      {children}
+    </th>
+  ),
+  tbody: ({ children, ...props }: any) => (
+    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700" {...props}>
+      {children}
+    </tbody>
+  ),
+  tr: ({ children, ...props }: any) => (
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50" {...props}>{children}</tr>
+  ),
+  td: ({ children, ...props }: any) => (
+    <td className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </td>
+  ),
+  
+  // Structured horizontal rule spacing
+  hr: ({ ...props }: any) => (
+    <hr className="my-3 border-gray-300 dark:border-gray-600" {...props} />
+  ),
+  
+  // Add support for strikethrough
+  del: ({ children, ...props }: any) => (
+    <del className="line-through text-gray-500 dark:text-gray-400" {...props}>
+      {children}
+    </del>
+  ),
+  
+  // Enhanced link styling
+  a: ({ children, ...props }: any) => (
+    <a className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline" {...props}>
+      {children}
+    </a>
+  ),
 }
 
 export function QATab({ documentId }: QATabProps) {
@@ -54,8 +178,7 @@ export function QATab({ documentId }: QATabProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const [ragHealth, setRagHealth] = useState<any>(null);
-
+  const [chatStarted, setChatStarted] = useState(false); // New state to track if chat is started
 
   const quickTopics = [
     "Termination Conditions",
@@ -66,10 +189,9 @@ export function QATab({ documentId }: QATabProps) {
     "Payment Terms",
   ];
 
-  // Load suggested questions and check RAG health on component mount
+  // Load suggested questions on component mount
   useEffect(() => {
     loadSuggestedQuestions();
-    checkRagHealth();
   }, [documentId]);
 
   const loadSuggestedQuestions = async () => {
@@ -100,20 +222,13 @@ export function QATab({ documentId }: QATabProps) {
     }
   };
 
-  const checkRagHealth = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/rag_health");
-      if (response.ok) {
-        const data = await response.json();
-        setRagHealth(data);
-      }
-    } catch (error) {
-      console.error("Failed to check RAG health:", error);
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isLoading) return;
+
+    // Ensure chat is started when sending a message
+    if (!chatStarted) {
+      setChatStarted(true);
+    }
 
     const userMessage: Message = {
       id: Date.now(),
@@ -181,6 +296,23 @@ export function QATab({ documentId }: QATabProps) {
 
   const handleQuestionClick = (question: string) => {
     setNewMessage(question);
+    if (!chatStarted) {
+      setChatStarted(true);
+      // Focus input after state update
+      setTimeout(() => {
+        const input = document.querySelector('input[placeholder*="question"]') as HTMLInputElement;
+        if (input) input.focus();
+      }, 100);
+    }
+  };
+
+  const handleStartChat = () => {
+    setChatStarted(true);
+    // Focus input after state update
+    setTimeout(() => {
+      const input = document.querySelector('input[placeholder*="question"]') as HTMLInputElement;
+      if (input) input.focus();
+    }, 100);
   };
 
   const getConfidenceColor = (confidence: number) => {
@@ -189,407 +321,308 @@ export function QATab({ documentId }: QATabProps) {
     return "text-red-600";
   };
 
-  const getHealthStatusColor = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return "text-green-600";
-      case "partial":
-        return "text-yellow-600";
-      default:
-        return "text-red-600";
-    }
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="font-space-grotesk">Document Q&A</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Ask questions about this contract and get AI-powered answers
-                with source citations.
+    <div className="h-full flex flex-col">
+      {/* Header - simplified */}
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Document Q&A</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Ask questions about this contract and get AI-powered answers
+        </p>
+      </div>
+
+      {/* Show different UI based on chat state */}
+      {messages.length === 0 && !chatStarted ? (
+        /* New Chat State - Show Interactive Document Analysis */
+        <div className="flex-1 flex flex-col">
+          {/* Center Content */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center max-w-md">
+              <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <Bot className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                Interactive Document Analysis
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                Use our AI chatbot to ask specific questions about this document. 
+                Get instant answers about clauses, risks, obligations, and legal implications.
               </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              {ragHealth && (
-                <div className="flex items-center space-x-2 text-sm">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      ragHealth.rag_health?.status === "healthy"
-                        ? "bg-green-500"
-                        : ragHealth.rag_health?.status === "partial"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                    }`}
-                  ></div>
-                  <span className="text-muted-foreground">
-                    RAG Service:{" "}
-                    <span
-                      className={getHealthStatusColor(
-                        ragHealth.rag_health?.status || "unknown"
-                      )}
-                    >
-                      {ragHealth.rag_health?.status || "unknown"}
-                    </span>
-                  </span>
-                </div>
-              )}
-              <Button variant="outline" size="sm">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                API Documentation
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg mb-8"
+                onClick={handleStartChat}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                Open AI Chat Assistant
               </Button>
             </div>
           </div>
-        </CardHeader>
-      </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Chat Interface */}
-        <div className="lg:col-span-2">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-lg font-space-grotesk">
-                Interactive Document Analysis
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Ask specific questions about this document. Get instant
-                AI-powered answers with confidence scores and source citations.
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* Messages */}
-              <div className="space-y-6 mb-6 max-h-96 overflow-y-auto">
-                {messages.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Ask me anything about this legal document!</p>
-                    <p className="text-sm mt-2">
-                      Try one of the suggested questions below to get started.
-                    </p>
-                  </div>
-                )}
-
-                {messages.map((message) => (
-                  <div key={message.id} className="space-y-4">
-                    <div
-                      className={`flex items-start space-x-3 ${
-                        message.type === "user" ? "justify-end" : ""
-                      }`}
-                    >
-                      {message.type === "ai" && (
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Bot className="h-4 w-4 text-primary" />
-                        </div>
-                      )}
-                      <div
-                        className={`max-w-md p-4 rounded-lg ${
-                          message.type === "user"
-                            ? "bg-primary text-primary-foreground ml-auto"
-                            : "bg-secondary text-secondary-foreground"
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-
-                        {/* AI message metadata */}
-                        {message.type === "ai" && (
-                          <div className="mt-3 space-y-2">
-                            {message.confidence !== undefined && (
-                              <div className="flex items-center space-x-2">
-                                <span className="text-xs text-muted-foreground">
-                                  Confidence:
-                                </span>
-                                <span
-                                  className={`text-xs font-medium ${getConfidenceColor(
-                                    message.confidence
-                                  )}`}
-                                >
-                                  {message.confidence.toFixed(1)}%
-                                </span>
-                                <Progress
-                                  value={message.confidence}
-                                  className="h-1 w-16"
-                                />
-                              </div>
-                            )}
-
-                            {message.processing_time && (
-                              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                <span>
-                                  {message.processing_time.toFixed(2)}s
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <p
-                          className={`text-xs mt-2 ${
-                            message.type === "user"
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {message.timestamp}
-                        </p>
-                      </div>
-                      {message.type === "user" && (
-                        <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 text-secondary-foreground" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* AI message additional info */}
-                    {message.type === "ai" &&
-                      (message.sources ||
-                        message.related_topics ||
-                        message.follow_up_questions) && (
-                        <div className="ml-11 space-y-3">
-                          {/* Sources */}
-                          {message.sources && message.sources.length > 0 && (
-                            <Card className="border-border/50">
-                              <CardContent className="p-3">
-                                <h4 className="text-sm font-medium mb-2 flex items-center">
-                                  <FileText className="h-4 w-4 mr-1" />
-                                  Sources
-                                </h4>
-                                <div className="space-y-2">
-                                  {message.sources.map((source) => (
-                                    <div
-                                      key={source.id}
-                                      className="text-xs bg-secondary/50 p-2 rounded"
-                                    >
-                                      <div className="flex items-center justify-between mb-1">
-                                        <span className="font-medium">
-                                          {source.source}
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                          {source.similarity_score}% match
-                                        </span>
-                                      </div>
-                                      <p className="text-muted-foreground">
-                                        {source.content_preview}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-
-                          {/* Related Topics */}
-                          {message.related_topics &&
-                            message.related_topics.length > 0 && (
-                              <div>
-                                <h4 className="text-sm font-medium mb-2">
-                                  Related Topics
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {message.related_topics.map(
-                                    (topic, index) => (
-                                      <Badge
-                                        key={index}
-                                        variant="outline"
-                                        className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                                        onClick={() =>
-                                          handleQuestionClick(
-                                            `Tell me about ${topic.toLowerCase()}`
-                                          )
-                                        }
-                                      >
-                                        {topic}
-                                      </Badge>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                          {/* Follow-up Questions */}
-                          {message.follow_up_questions &&
-                            message.follow_up_questions.length > 0 && (
-                              <div>
-                                <h4 className="text-sm font-medium mb-2">
-                                  Follow-up Questions
-                                </h4>
-                                <div className="space-y-1">
-                                  {message.follow_up_questions.map(
-                                    (question, index) => (
-                                      <Button
-                                        key={index}
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-xs justify-start h-auto p-2 hover:bg-secondary"
-                                        onClick={() =>
-                                          handleQuestionClick(question)
-                                        }
-                                      >
-                                        <HelpCircle className="h-3 w-3 mr-1 flex-shrink-0" />
-                                        {question}
-                                      </Button>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                        </div>
-                      )}
-                  </div>
-                ))}
-
-                {/* Loading indicator */}
-                {isLoading && (
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-primary animate-pulse" />
-                    </div>
-                    <div className="bg-secondary text-secondary-foreground p-4 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                        <span className="text-sm text-muted-foreground ml-2">
-                          Analyzing document...
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Input */}
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Type your question about the legal document..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && !e.shiftKey && handleSendMessage()
-                  }
-                  className="flex-1"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={isLoading || !newMessage.trim()}
+          {/* Suggested Questions Section - Only show when chat not started */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">
+              Suggested Questions:
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {suggestedQuestions.slice(0, 6).map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuestionClick(question)}
+                  className="text-left p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 transition-colors border border-gray-200 dark:border-gray-600"
                 >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  {question}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+      ) : messages.length === 0 && chatStarted ? (
+        /* Chat Started but No Messages - Show Input Only */
+        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4">
+          {/* Center prompt to start asking questions */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center max-w-md">
+              <div className="w-12 h-12 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <Bot className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                AI Assistant Ready
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
+                Ask me anything about this legal document!
+              </p>
+            </div>
+          </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Service Status */}
-          {ragHealth && (
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-lg font-space-grotesk">
-                  Service Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span>Question Answering</span>
-                    <div className="flex items-center space-x-1">
-                      {ragHealth.capabilities?.question_answering ? (
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Semantic Search</span>
-                    <div className="flex items-center space-x-1">
-                      {ragHealth.capabilities?.semantic_search ? (
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Document Citation</span>
-                    <div className="flex items-center space-x-1">
-                      {ragHealth.capabilities?.document_citation ? (
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Input Section with better spacing and height */}
+          <div className="mb-8">
+            <div className="flex space-x-3">
+              <textarea
+                placeholder="Type your question about this legal document..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1 min-h-[60px] max-h-[120px] p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                disabled={isLoading}
+                autoFocus
+                rows={2}
+              />
+              <Button
+                onClick={handleSendMessage}
+                className="bg-blue-600 hover:bg-blue-700 h-[60px] px-6 rounded-lg"
+                disabled={isLoading || !newMessage.trim()}
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Active Chat State - Show Messages Only */
+        <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4">
+          {/* Chat Messages with confidence display */}
+          {messages.length > 0 && (
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Confidence:</span>
+                <span className="text-sm font-bold text-blue-600">92% High</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Focus on input
+                  const input = document.querySelector('textarea[placeholder*="question"]') as HTMLTextAreaElement;
+                  if (input) input.focus();
+                }}
+              >
+                Open Detailed AI Assistant
+              </Button>
+            </div>
           )}
 
-          {/* Quick Topics */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-lg font-space-grotesk">
-                Quick Topics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {quickTopics.map((topic, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                    onClick={() =>
-                      handleQuestionClick(
-                        `Tell me about ${topic.toLowerCase()}`
-                      )
-                    }
-                  >
-                    {topic}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Quick Topics Pills - Only show for last message */}
+          {messages.length > 0 && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {quickTopics.map((topic, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuestionClick(`Tell me about ${topic.toLowerCase()}`)}
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full text-xs text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* Suggested Questions */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-lg font-space-grotesk">
-                Suggested Questions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {suggestedQuestions.map((question, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className="w-full justify-start text-left h-auto p-3 hover:bg-secondary"
-                    onClick={() => handleQuestionClick(question)}
-                  >
-                    <HelpCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="text-sm">{question}</span>
-                  </Button>
-                ))}
+          {/* Messages Container with auto scroll and 80% width */}
+          <div className="flex-1 space-y-6 overflow-y-auto max-h-[500px] mb-6" ref={(el) => {
+            if (el && messages.length > 0) {
+              el.scrollTop = el.scrollHeight;
+            }
+          }}>
+            {messages.map((message, index) => (
+              <div key={message.id} className="space-y-3">
+                <div className={`flex items-start space-x-4 ${
+                  message.type === "user" ? "justify-end" : ""
+                }`}>
+                  {message.type === "ai" && (
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  )}
+                  <div className={`max-w-[80%] p-4 rounded-lg ${
+                    message.type === "user"
+                      ? "bg-blue-600 text-white ml-auto"
+                      : "bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  }`}>
+                    {message.type === "ai" ? (
+                      <div className="max-w-none overflow-hidden whitespace-pre-wrap break-words">
+                        <ReactMarkdown 
+                          components={MarkdownComponents}
+                          remarkPlugins={[remarkGfm]}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                    )}
+
+                    {/* AI message metadata - Remove "Just now" */}
+                    {message.type === "ai" && (
+                      <div className="mt-3 space-y-2">
+                        {message.confidence !== undefined && (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Confidence:
+                            </span>
+                            <span className={`text-xs font-medium ${getConfidenceColor(message.confidence)}`}>
+                              {message.confidence.toFixed(1)}%
+                            </span>
+                            <Progress value={message.confidence} className="h-1 w-16" />
+                          </div>
+                        )}
+                        {message.processing_time && (
+                          <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                            <Clock className="h-3 w-3" />
+                            <span>{message.processing_time.toFixed(2)}s</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {message.type === "user" && (
+                    <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Sources and additional info for AI messages */}
+                {message.type === "ai" && (message.sources || message.related_topics || message.follow_up_questions) && (
+                  <div className="ml-14 space-y-4">
+                    {message.sources && message.sources.length > 0 && (
+                      <Card className="border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4">
+                          <h4 className="text-sm font-medium mb-3 flex items-center">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Sources
+                          </h4>
+                          <div className="space-y-3">
+                            {message.sources.map((source) => (
+                              <div key={source.id} className="text-xs bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-medium">{source.source}</span>
+                                  <span className="text-gray-500 dark:text-gray-400">
+                                    {source.similarity_score}% match
+                                  </span>
+                                </div>
+                                <p className="text-gray-600 dark:text-gray-300">{source.content_preview}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Show follow-up questions only for the last AI message */}
+                    {index === messages.length - 1 && message.follow_up_questions && message.follow_up_questions.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                          Suggested follow-up questions:
+                        </h4>
+                        <div className="space-y-2">
+                          {message.follow_up_questions.map((question, qIndex) => (
+                            <button
+                              key={qIndex}
+                              onClick={() => handleQuestionClick(question)}
+                              className="w-full text-left p-3 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg text-sm text-blue-700 dark:text-blue-300 transition-colors border border-blue-200 dark:border-blue-800"
+                            >
+                              <HelpCircle className="h-3 w-3 mr-2 inline" />
+                              {question}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            ))}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg max-w-[80%]">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">Analyzing document...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input Section for Active Chat with increased height */}
+          <div className="mb-4">
+            <div className="flex space-x-3">
+              <textarea
+                placeholder="Type your question about this legal document..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1 min-h-[60px] max-h-[120px] p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                disabled={isLoading}
+                rows={2}
+              />
+              <Button
+                onClick={handleSendMessage}
+                className="bg-blue-600 hover:bg-blue-700 h-[60px] px-6 rounded-lg"
+                disabled={isLoading || !newMessage.trim()}
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

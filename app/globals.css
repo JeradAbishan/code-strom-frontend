@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.whitespace-pre-wrap {
+  white-space: normal;
+}
+
 :root {
   /* Updated color tokens to match blue theme from screenshots */
   --background: #ffffff;
