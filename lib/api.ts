@@ -1,6 +1,6 @@
 // API configuration and utility functions for backend integration
-const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "https://api.swift-supply.xyz";
-
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.swift-supply.xyz";
 
 // API Response Types
 export interface APIResponse<T = any> {
@@ -278,10 +278,13 @@ export class DocumentAPI {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`${API_BASE_URL}/process_document_enhanced`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/process_document_enhanced`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       return this.handleResponse<EnhancedProcessingResponse>(response);
     } catch (error) {
@@ -298,7 +301,9 @@ export class DocumentAPI {
     documentId: string
   ): Promise<APIResponse<ProcessingStatusResponse>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/processing_status/${documentId}`);
+      const response = await fetch(
+        `${API_BASE_URL}/processing_status/${documentId}`
+      );
       return this.handleResponse<ProcessingStatusResponse>(response);
     } catch (error) {
       return {

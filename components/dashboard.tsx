@@ -18,6 +18,7 @@ import {
   Bell,
   Wifi,
   WifiOff,
+  X,
 } from "lucide-react";
 
 interface DashboardProps {
@@ -106,7 +107,7 @@ export function Dashboard({
       risk: "HIGH",
       compliance: 72,
       confidence: 88,
-      issues: ["Overly broad scope", "Excessive confidentiality period"],
+      issues: ["O erly broad scope", "Excessive confidentiality period"],
     },
     {
       id: "3",
@@ -186,6 +187,10 @@ export function Dashboard({
     }
   };
 
+  const handleCancelUpload = () => {
+    setUploadedFile(null);
+  };
+
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -226,7 +231,7 @@ export function Dashboard({
                 </div>
               )}
             </div>
-            <div className="flex items-center space-x-4">
+            {/* <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />
               </Button>
@@ -238,7 +243,7 @@ export function Dashboard({
                   Mahesh Majoori
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </header>
@@ -408,21 +413,20 @@ export function Dashboard({
                     <Upload className="h-8 w-8 text-indigo-600" />
                   </div>
 
-                  {!backendHealth?.isOnline && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-800 text-sm">
-                        ⚠️ Backend API is not available. Please ensure the API
-                        server is running on localhost:8000
-                      </p>
-                    </div>
-                  )}
-
                   {uploadedFile ? (
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         Document Ready
                       </h3>
-                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4 relative">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCancelUpload}
+                          className="absolute top-2 right-2 h-8 w-8 p-0 text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                         <div className="flex items-center space-x-3">
                           <FileText className="h-8 w-8 text-indigo-600" />
                           <div className="text-left">
@@ -435,15 +439,24 @@ export function Dashboard({
                           </div>
                         </div>
                       </div>
-                      <Button
-                        onClick={handleAnalyze}
-                        disabled={!backendHealth?.isOnline}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 disabled:bg-gray-400"
-                      >
-                        {backendHealth?.isOnline
-                          ? "Analyse with AI"
-                          : "Backend Offline"}
-                      </Button>
+                      <div className="space-y-3">
+                        <Button
+                          onClick={handleAnalyze}
+                          disabled={!backendHealth?.isOnline}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 disabled:bg-gray-400 w-full"
+                        >
+                          {backendHealth?.isOnline
+                            ? "Analyse with AI"
+                            : "Backend Offline"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelUpload}
+                          className="w-full text-gray-600 border-gray-300 hover:bg-gray-50"
+                        >
+                          Choose Different File
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <>

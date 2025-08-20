@@ -9,8 +9,14 @@ import { useEnhancedDocumentAnalysis, useBackendHealth } from "@/lib/hooks";
 
 function HomeContent() {
   const { state, dispatch } = useAppContext();
-  const { processDocument, isProcessing, analysisData, error, processingStatus, documentId } =
-    useEnhancedDocumentAnalysis();
+  const {
+    processDocument,
+    isProcessing,
+    analysisData,
+    error,
+    processingStatus,
+    documentId,
+  } = useEnhancedDocumentAnalysis();
   const { healthStatus, isOnline } = useBackendHealth();
 
   // Update backend health in context
@@ -24,12 +30,14 @@ function HomeContent() {
   useEffect(() => {
     if (analysisData && !isProcessing) {
       console.log("Main page received analysisData:", analysisData); // Debug log
-      
+
       // Set the document with the proper ID from enhanced processing
       if (documentId) {
-        dispatch(appActions.setDocument(documentId, analysisData.metadata.filename));
+        dispatch(
+          appActions.setDocument(documentId, analysisData.metadata.filename)
+        );
       }
-      
+
       dispatch(appActions.setAnalysisData(analysisData));
       dispatch(appActions.setView("document"));
       dispatch(appActions.setProcessing(false));

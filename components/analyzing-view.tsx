@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Clock, Zap, Database, Brain, AlertCircle } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import type { ProcessingStatusResponse } from "@/lib/api";
 
 interface AnalyzingViewProps {
@@ -22,35 +22,11 @@ export function AnalyzingView({
 
   const steps = [
     "🚀 Processing Document with Original API...",
-    "📄 Generating Complete Analysis...", 
+    "📄 Generating Complete Analysis...",
     "✅ Analysis Complete - Results Ready!",
     "🔍 Background: Setting up Q&A System...",
     "🗃️ Background: Vector Storage Processing...",
     "🧠 Q&A Knowledge Base Ready!",
-  ];
-
-  const enhancedSteps = [
-    {
-      icon: Zap,
-      title: "Document Analysis",
-      description: "Complete AI-powered analysis using process_direct",
-      completed: !isProcessing,
-      time: processingStatus?.processing_times?.fast_track,
-    },
-    {
-      icon: Database,
-      title: "Vector Processing (Background)",
-      description: "Optional Q&A system embedding & chunking",
-      completed: processingStatus?.vector_storage_ready || false,
-      time: processingStatus?.processing_times?.background_processing,
-    },
-    {
-      icon: Brain,
-      title: "Q&A System (Background)",
-      description: "Interactive knowledge base for questions",
-      completed: processingStatus?.qa_system_ready || false,
-      time: processingStatus?.processing_times?.total_time,
-    },
   ];
 
   useEffect(() => {
@@ -58,7 +34,7 @@ export function AnalyzingView({
 
     // Timer for elapsed time
     const timeInterval = setInterval(() => {
-      setTimeElapsed(prev => prev + 1);
+      setTimeElapsed((prev) => prev + 1);
     }, 1000);
 
     // Step progression
@@ -82,14 +58,15 @@ export function AnalyzingView({
     }
   }, [timeElapsed, processingStatus?.fast_track_completed]);
 
-  // Calculate overall progress with time-based fallback
-  const overallProgress = enhancedSteps.reduce((acc, step) => {
-    return acc + (step.completed ? 33.33 : 0);
-  }, 0);
+  // Calculate simple progress based on processing status
+  const getSimpleProgress = () => {
+    if (processingStatus?.fast_track_completed) return 100;
+    if (timeElapsed > 60) return 80;
+    if (timeElapsed > 30) return 50;
+    return Math.min((timeElapsed / 60) * 40, 40); // Cap at 40% until completion
+  };
 
-  // If no status updates, show time-based progress (slower)
-  const timeBasedProgress = Math.min((timeElapsed / 120) * 100, 85); // 2 minute estimate, cap at 85%
-  const displayProgress = overallProgress > 0 ? overallProgress : timeBasedProgress;
+  const displayProgress = getSimpleProgress();
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -102,57 +79,53 @@ export function AnalyzingView({
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
               <h2 className="text-2xl font-space-grotesk font-bold text-foreground mb-2">
-                Enhanced Document Analysis
+                Document Analysis
               </h2>
               <p className="text-muted-foreground">
                 Processing: {fileName || "document"}
               </p>
               <div className="mt-2 text-sm text-muted-foreground">
-                Time elapsed: {Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, '0')}
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                Dual-Process Architecture: Fast AI Analysis + Background Vector Processing
+                Time elapsed: {Math.floor(timeElapsed / 60)}:
+                {(timeElapsed % 60).toString().padStart(2, "0")}
               </div>
             </div>
 
-            {/* Enhanced Progress Steps */}
-            <div className="space-y-6 mb-8">
-              {enhancedSteps.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div
-                      className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                        step.completed
-                          ? "bg-green-500 text-white"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {step.completed ? (
-                        <CheckCircle className="h-5 w-5" />
-                      ) : (
-                        <Icon className="h-5 w-5" />
-                      )}
+            {/* Simple Progress Display */}
+            <div className="mb-8">
+              {/* Single Alert Section */}
+              {timeElapsed > 45 && !processingStatus?.fast_track_completed && (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">
+                        Processing is taking longer than expected
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Complex documents may take 1-2 minutes. The system is
+                        working on your analysis...
+                      </p>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-foreground">{step.title}</h3>
-                        {step.completed && step.time && (
-                          <span className="text-xs text-muted-foreground">
-                            {step.time.toFixed(1)}s
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
-                    </div>
-                    {step.completed ? (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-muted-foreground animate-pulse" />
-                    )}
                   </div>
-                );
-              })}
+                </div>
+              )}
+
+              {timeElapsed > 90 && !processingStatus?.fast_track_completed && (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">
+                        Processing is taking longer than expected
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        The AI agents are working on complex analysis. This may
+                        take up to 2-3 minutes for large documents.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Progress Bar */}
@@ -169,60 +142,16 @@ export function AnalyzingView({
               </div>
               {timeElapsed > 0 && (
                 <div className="text-xs text-muted-foreground mt-1 text-center">
-                  {overallProgress === 0 
-                    ? `Processing... (${timeElapsed}s elapsed)` 
-                    : `Status updates received (${timeElapsed}s total)`
-                  }
+                  Processing... ({timeElapsed}s elapsed)
                 </div>
               )}
             </div>
 
-            {/* Slow Processing Warning */}
-            {showSlowWarning && (
-              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-yellow-600" />
-                  <div>
-                    <h4 className="font-medium text-yellow-800">Processing is taking longer than expected</h4>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Complex documents may take 1-2 minutes. The system is working on your analysis...
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Status Messages */}
             <div className="space-y-2">
-              {/* Slow processing warning */}
-              {showSlowWarning && !processingStatus?.fast_track_completed && (
-                <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded border border-yellow-200">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <span className="font-medium">Processing is taking longer than expected</span>
-                  </div>
-                  <p className="mt-1 text-xs">
-                    The AI agents are working on complex analysis. This may take up to 2-3 minutes for large documents.
-                  </p>
-                </div>
-              )}
-
-              {/* Backend timeout hint */}
-              {timeElapsed > 90 && !processingStatus?.fast_track_completed && (
-                <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded border border-orange-200">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <span className="font-medium">Backend may be experiencing high load</span>
-                  </div>
-                  <p className="mt-1 text-xs">
-                    You can try refreshing the page and uploading again, or wait for the current process to complete.
-                  </p>
-                </div>
-              )}
-
               {processingStatus?.fast_track_completed && (
                 <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-                  ✅ Fast analysis complete - Document ready for viewing!
+                  ✅ Analysis Complete - Results Ready!
                 </div>
               )}
               {processingStatus?.vector_storage_ready && (
@@ -240,19 +169,25 @@ export function AnalyzingView({
             {/* Performance Info */}
             {processingStatus?.processing_times && (
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Performance Metrics</h4>
+                <h4 className="font-medium text-foreground mb-2">
+                  Performance Metrics
+                </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Fast Track:</span>
                     <span className="ml-2 font-medium">
-                      {processingStatus.processing_times.fast_track?.toFixed(1)}s
+                      {processingStatus.processing_times.fast_track?.toFixed(1)}
+                      s
                     </span>
                   </div>
                   {processingStatus.processing_times.background_processing && (
                     <div>
                       <span className="text-muted-foreground">Background:</span>
                       <span className="ml-2 font-medium">
-                        {processingStatus.processing_times.background_processing?.toFixed(1)}s
+                        {processingStatus.processing_times.background_processing?.toFixed(
+                          1
+                        )}
+                        s
                       </span>
                     </div>
                   )}
@@ -266,21 +201,23 @@ export function AnalyzingView({
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                 <span>{steps[currentStep]}</span>
               </div>
-              
+
               {/* Additional Status for Long Processing */}
               {timeElapsed > 30 && !processingStatus?.fast_track_completed && (
                 <div className="mt-4 text-xs text-muted-foreground">
                   <div className="flex items-center justify-center space-x-1">
                     <AlertCircle className="h-3 w-3" />
-                    <span>Processing complex document - this may take a moment...</span>
+                    <span>
+                      Processing complex document - this may take a moment...
+                    </span>
                   </div>
                 </div>
               )}
-              
+
               {timeElapsed > 90 && (
                 <div className="mt-2 text-xs text-muted-foreground">
-                  <button 
-                    onClick={() => window.location.reload()} 
+                  <button
+                    onClick={() => window.location.reload()}
                     className="text-primary hover:underline"
                   >
                     Refresh page if processing seems stuck

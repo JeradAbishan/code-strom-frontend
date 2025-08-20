@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
-import { DocumentAPI, type DocumentAnalysisResponse, type EnhancedProcessingResponse, type ProcessingStatusResponse } from "@/lib/api";
+import {
+  DocumentAPI,
+  type DocumentAnalysisResponse,
+  type EnhancedProcessingResponse,
+  type ProcessingStatusResponse,
+} from "@/lib/api";
 
 // Hook for enhanced document processing with dual-process architecture
 export function useEnhancedDocumentAnalysis() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [analysisData, setAnalysisData] = useState<DocumentAnalysisResponse | null>(null);
+  const [analysisData, setAnalysisData] =
+    useState<DocumentAnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [processingStatus, setProcessingStatus] = useState<ProcessingStatusResponse | null>(null);
+  const [processingStatus, setProcessingStatus] =
+    useState<ProcessingStatusResponse | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
 
   // Helper function to poll for Q&A system readiness
@@ -18,7 +25,7 @@ export function useEnhancedDocumentAnalysis() {
       try {
         // Try to check if the Q&A system is ready for this document
         const statusResponse = await DocumentAPI.checkProcessingStatus(docId);
-        
+
         if (statusResponse.status === "success" && statusResponse.data) {
           const status = statusResponse.data;
           setProcessingStatus(status);
@@ -34,11 +41,15 @@ export function useEnhancedDocumentAnalysis() {
             attempts++;
             setTimeout(poll, 10000); // Poll every 10 seconds
           } else {
-            console.log("⏰ Q&A polling timeout - continuing without Q&A features");
+            console.log(
+              "⏰ Q&A polling timeout - continuing without Q&A features"
+            );
           }
         } else {
           // If status endpoint doesn't exist or fails, that's okay - just continue without Q&A
-          console.log("ℹ️ Q&A status check unavailable - analysis complete without Q&A features");
+          console.log(
+            "ℹ️ Q&A status check unavailable - analysis complete without Q&A features"
+          );
         }
       } catch (error) {
         // Silently handle errors - Q&A features are optional
@@ -65,43 +76,60 @@ export function useEnhancedDocumentAnalysis() {
       if (response.status === "success" && response.data) {
         const analysisData = response.data;
         console.log("✅ Document analysis completed successfully");
-        
+
         // Set the analysis data from the original endpoint
         setAnalysisData(analysisData);
-        
+
         // Check if backend provided a Q&A document ID
         const qaDocumentId = analysisData.metadata?.qa_document_id;
-        const docId = qaDocumentId || `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const docId =
+          qaDocumentId ||
+          `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         setDocumentId(docId);
-        
+
         console.log("📚 Q&A Document ID:", docId);
         console.log("🔍 Backend provided Q&A ID:", qaDocumentId ? "Yes" : "No");
-        
+
         // After successful analysis, check if background vector processing is available
         console.log("🔄 Checking for Q&A system readiness...");
-        
+
         // Poll for Q&A system status to see if vector storage is complete
         pollForQAReadiness(docId);
-        
       } else {
         // Handle processing error
         const errorMessage = response.error || "Failed to process document";
-        
-        if (errorMessage.includes("timeout") || errorMessage.includes("TimeoutError") || errorMessage.includes("futures unfinished")) {
-          setError("Document processing timed out. The document may be too complex or the server is busy. Please try again with a smaller document or wait a few minutes.");
-        } else if (errorMessage.includes("500") || errorMessage.includes("Internal Server Error")) {
-          setError("Server error occurred during processing. Please try again in a few moments.");
+
+        if (
+          errorMessage.includes("timeout") ||
+          errorMessage.includes("TimeoutError") ||
+          errorMessage.includes("futures unfinished")
+        ) {
+          setError(
+            "Document processing timed out. The document may be too complex or the server is busy. Please try again with a smaller document or wait a few minutes."
+          );
+        } else if (
+          errorMessage.includes("500") ||
+          errorMessage.includes("Internal Server Error")
+        ) {
+          setError(
+            "Server error occurred during processing. Please try again in a few moments."
+          );
         } else {
           setError(errorMessage);
         }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+
       if (errorMessage.includes("fetch") || errorMessage.includes("network")) {
-        setError("Network error: Please check your connection and ensure the backend server is running on localhost:8000");
+        setError(
+          "Network error: Please check your connection and ensure the backend server is running on localhost:8000"
+        );
       } else if (errorMessage.includes("timeout")) {
-        setError("Request timed out. The document processing is taking longer than expected. Please try again.");
+        setError(
+          "Request timed out. The document processing is taking longer than expected. Please try again."
+        );
       } else {
         setError(errorMessage);
       }
@@ -117,7 +145,7 @@ export function useEnhancedDocumentAnalysis() {
     const poll = async () => {
       try {
         const statusResponse = await DocumentAPI.checkProcessingStatus(docId);
-        
+
         if (statusResponse.status === "success" && statusResponse.data) {
           const status = statusResponse.data;
           setProcessingStatus(status);

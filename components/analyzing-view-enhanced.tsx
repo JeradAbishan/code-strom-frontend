@@ -31,7 +31,7 @@ export function AnalyzingView({
 
   const steps = [
     "🚀 Fast AI Analysis (Direct Processing)...",
-    "📄 Document Summary Generation...", 
+    "📄 Document Summary Generation...",
     "🔍 Background Vector Processing...",
     "🗃️ Chunk Embedding & Storage...",
     "🧠 Q&A Knowledge Base Setup...",
@@ -82,7 +82,7 @@ export function AnalyzingView({
         if (processingStatus?.qa_system_ready && prev < 100) {
           return 100; // Everything complete
         }
-        
+
         const increment = Math.random() * 10 + 2; // Slower increments
         return Math.min(prev + increment, 85); // Cap at 85% until completion
       });
@@ -113,7 +113,8 @@ export function AnalyzingView({
                 Processing: {fileName || "document"}
               </p>
               <div className="mt-4 text-sm text-muted-foreground">
-                Dual-Process Architecture: Fast AI Analysis + Background Vector Processing
+                Dual-Process Architecture: Fast AI Analysis + Background Vector
+                Processing
               </div>
             </div>
 
@@ -138,14 +139,18 @@ export function AnalyzingView({
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-foreground">{step.title}</h3>
+                        <h3 className="font-medium text-foreground">
+                          {step.title}
+                        </h3>
                         {step.completed && step.time && (
                           <span className="text-xs text-muted-foreground">
                             {step.time.toFixed(1)}s
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {step.description}
+                      </p>
                     </div>
                     {step.completed ? (
                       <CheckCircle className="h-5 w-5 text-green-500" />
@@ -193,19 +198,25 @@ export function AnalyzingView({
             {/* Performance Info */}
             {processingStatus && (
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Performance Metrics</h4>
+                <h4 className="font-medium text-foreground mb-2">
+                  Performance Metrics
+                </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Fast Track:</span>
                     <span className="ml-2 font-medium">
-                      {processingStatus.processing_times.fast_track?.toFixed(1)}s
+                      {processingStatus.processing_times.fast_track?.toFixed(1)}
+                      s
                     </span>
                   </div>
                   {processingStatus.processing_times.background_processing && (
                     <div>
                       <span className="text-muted-foreground">Background:</span>
                       <span className="ml-2 font-medium">
-                        {processingStatus.processing_times.background_processing?.toFixed(1)}s
+                        {processingStatus.processing_times.background_processing?.toFixed(
+                          1
+                        )}
+                        s
                       </span>
                     </div>
                   )}
