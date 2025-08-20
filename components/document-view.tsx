@@ -205,7 +205,7 @@ export function DocumentView({
     }
 
     console.log("Original overview text:", overview.overview);
-    let summary = cleanTextForPDF(overview.overview);
+    const summary = cleanTextForPDF(overview.overview);
     console.log("Cleaned summary text:", summary);
 
     // Split into paragraphs for better readability
